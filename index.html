@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image to Canvas</title>
+    <title>Image Selection and Sticker Book</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Safari Scrapbook</h1>
-    <input type="file" id="image-input" accept="image/*">
-    <canvas id="image-canvas"></canvas>
+    <h1>Safari Stickerbook</h1>
+    <input type="file" id="imageUpload" accept="image/*">
+    <div class="canvas-container">
+        <canvas id="imageCanvas"></canvas>
+        <canvas id="stickerCanvas"></canvas>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>
