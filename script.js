@@ -1,42 +1,57 @@
-document.addEventListener('DOMContentLoaded', function () {
-    const imageInput = document.getElementById('image-input');
-    const canvas = document.getElementById('image-canvas');
-    const ctx = canvas.getContext('2d');
+const imageUpload = document.getElementById('imageUpload');
+const imageCanvas = document.getElementById('imageCanvas');
+const canvasContext = imageCanvas.getContext('2d');
 
-    function resizeCanvas(image) {
-        const maxWidth = window.innerWidth * 0.9;
-        const maxHeight = window.innerHeight * 0.8;
+const canvasWidth = window.innerWidth * 0.7;
 
-        if (image.width > maxWidth || image.height > maxHeight) {
-            const aspectRatio = image.width / image.height;
-            if (maxWidth / maxHeight > aspectRatio) {
-                canvas.width = maxHeight * aspectRatio;
-                canvas.height = maxHeight;
-            } else {
-                canvas.width = maxWidth;
-                canvas.height = maxWidth / aspectRatio;
-            }
-        } else {
-            canvas.width = image.width;
-            canvas.height = image.height;
-        }
+let img;
+let startX, startY, endX, endY;
+let drawing = false;
+
+imageUpload.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        displayImage(file);
     }
-
-    imageInput.addEventListener('change', function (event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const image = new Image();
-            image.src = e.target.result;
-
-            image.onload = function () {
-                resizeCanvas(image);
-                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-            };
-        };
-
-        reader.readAsDataURL(file);
-    });
 });
+
+function displayImage(file) {
+    img = new Image();
+    img.src = URL.createObjectURL(file);
+
+    img.onload = () => {
+        const scaleFactor = canvasWidth / img.width;
+        imageCanvas.width = canvasWidth;
+        imageCanvas.height = img.height * scaleFactor;
+        canvasContext.drawImage(img, 0, 0, imageCanvas.width, imageCanvas.height);
+    };
+}
+
+imageCanvas.addEventListener('mousedown', (e) => {
+    startX = e.clientX - imageCanvas.getBoundingClientRect().left;
+    startY = e.clientY - imageCanvas.getBoundingClientRect().top;
+    drawing = true;
+});
+
+imageCanvas.addEventListener('mousemove', (e) => {
+    if (!drawing) return;
+    endX = e.clientX - imageCanvas.getBoundingClientRect().left;
+    endY = e.clientY - imageCanvas.getBoundingClientRect().top;
+    drawSelection();
+});
+
+imageCanvas.addEventListener('mouseup', () => {
+    drawing = false;
+});
+
+function drawSelection() {
+    canvasContext.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+    canvasContext.drawImage(img, 0, 0, imageCanvas.width, imageCanvas.height);
+    canvasContext.strokeStyle = 'rgba(0, 0, 255, 0.7)';
+    canvasContext.lineWidth = 2;
+    canvasContext.strokeRect(startX, startY, endX - startX, endY - startY);
+
+    // Add shading to the selected region
+    canvasContext.fillStyle = 'rgba(0, 0, 255, 0.2)';
+    canvasContext.fillRect(startX, startY, endX - startX, endY - startY);
+}

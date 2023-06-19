@@ -2,20 +2,33 @@ body {
     font-family: Arial, sans-serif;
     text-align: center;
     background-color: #f0f0f0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 
 h1 {
     color: #333;
 }
 
-input[type="file"] {
-    margin: 20px 0;
+.canvas-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
 }
 
-canvas {
+#imageCanvas, #stickerCanvas {
     border: 1px solid #333;
-    max-width: 100%;
+    margin: 0 10px;
+}
+
+#imageCanvas {
+    flex: 0 0 70%;
+    max-width: 70%;
+    cursor: crosshair;
+}
+
+#stickerCanvas {
+    flex: 0 0 30%;
+    max-width: 30%;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100"><text x="50%" y="50%" font-family="Arial, sans-serif" font-size="24" text-anchor="middle" dominant-baseline="central" fill="%23000000" opacity="0.1">Stickerbook</text></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
 }
