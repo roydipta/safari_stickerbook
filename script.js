@@ -55,3 +55,19 @@ function drawSelection() {
     canvasContext.fillStyle = 'rgba(0, 0, 255, 0.2)';
     canvasContext.fillRect(startX, startY, endX - startX, endY - startY);
 }
+
+
+const stickerCanvas = document.getElementById('stickerCanvas');
+const downloadBtn = document.getElementById('downloadBtn');
+
+downloadBtn.addEventListener('click', () => {
+    const dataUrl = stickerCanvas.toDataURL('image/png');
+
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = 'stickerCanvas.png';
+
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+});
