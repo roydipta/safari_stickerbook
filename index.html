@@ -5,16 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Safari Stickerbook</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/konva/konva.min.js"></script>
 </head>
 <body>
     <h1>Safari Stickerbook</h1>
     <input type="file" id="imageUpload" accept="image/*">
     <div class="parent-container">
-        <div class="canvas-container">
-            <canvas id="imageCanvas"></canvas>
-        </div>
+        <div class="canvas-container" id="imageContainer"></div>
         <div class="sticker-container">
-            <canvas id="stickerCanvas"></canvas>
+            <div id="stickerContainer"></div>
             <button id="downloadBtn">Download Sticker Canvas as PNG</button>
         </div>
     </div>
