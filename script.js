@@ -1,4 +1,5 @@
 const imageUpload = document.getElementById('imageUpload');
+const backgroundUpload = document.getElementById('backgroundUpload');
 const downloadBtn = document.getElementById('downloadBtn');
 const imageContainer = document.getElementById('imageContainer');
 const stickerContainer = document.getElementById('stickerContainer');
@@ -24,6 +25,13 @@ imageUpload.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
         displayImage(file);
+    }
+});
+
+backgroundUpload.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        displayBackgroundImage(file);
     }
 });
 
@@ -106,6 +114,32 @@ function displayImage(file) {
     };
 }
 
+function displayBackgroundImage(file) {
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+
+    img.onload = () => {
+        const imgWidth = img.width;
+        const imgHeight = img.height;
+
+        // Calculate scale to maintain aspect ratio
+        let scale = Math.min(canvasWidth / imgWidth, canvasHeight / imgHeight);
+
+        const konvaImg = new Konva.Image({
+            x: 0,
+            y: 0,
+            image: img,
+            width: imgWidth * scale,
+            height: imgHeight * scale,
+            draggable: false,
+        });
+
+        // add the image to the stickerLayer and then draw
+        stickerLayer.add(konvaImg);
+        stickerLayer.draw();
+    };
+}
+
 function copyToStickerCanvas(rect) {
     const stageToDataURL = stage.toDataURL();
     let imageObj = new Image();
@@ -130,7 +164,6 @@ function copyToStickerCanvas(rect) {
     };
     imageObj.src = stageToDataURL;
 }
-
 
 downloadBtn.addEventListener('click', () => {
     let link = document.createElement('a');
