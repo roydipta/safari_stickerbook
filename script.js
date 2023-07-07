@@ -11,16 +11,18 @@ let stage, layer, img, stickerStage, stickerLayer;
 let startX, startY, endX, endY;
 let drawing = false;
 
-// Create a static Sticker Stage
+//sticker Stage
 stickerStage = new Konva.Stage({
     container: 'stickerContainer',
     width: canvasWidth,
     height: canvasHeight,
 });
 
+//adding a layer on top of the stage
 stickerLayer = new Konva.Layer();
 stickerStage.add(stickerLayer);
 
+//as soon as you upload display that image - will need to change to call Python file
 imageUpload.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -43,10 +45,11 @@ function displayImage(file) {
         const imgWidth = img.width;
         const imgHeight = img.height;
 
-        // Calculate scale to maintain aspect ratio
+        //calculate scale to maintain aspect ratio
         let scale = Math.min(canvasWidth / imgWidth, canvasHeight / imgHeight);
 
-        // Create a Konva Stage
+        // stage --> layer --> image
+        //create a Konva Stage - here are where all the selection of the image will occur
         stage = new Konva.Stage({
             container: 'imageContainer',
             width: canvasWidth,
@@ -54,8 +57,9 @@ function displayImage(file) {
         });
 
         layer = new Konva.Layer();
-        stage.add(layer);
+        stage.add(layer); 
 
+        //adding the konva image on top of the konva layer
         const konvaImg = new Konva.Image({
             x: 0,
             y: 0,
@@ -66,7 +70,7 @@ function displayImage(file) {
         });
         layer.add(konvaImg);
 
-        // Create a rectangle for selection
+        //use rect function in konva to create a rectangle and add it to layer
         const rectangle = new Konva.Rect({
             x: 0,
             y: 0,
@@ -103,6 +107,7 @@ function displayImage(file) {
             layer.batchDraw();
         });
 
+        //
         stage.on('mouseup', function () {
             if (!drawing) return;
             drawing = false;
@@ -122,7 +127,7 @@ function displayBackgroundImage(file) {
         const imgWidth = img.width;
         const imgHeight = img.height;
 
-        // Calculate scale to maintain aspect ratio
+        // maintain aspect ratio - or was looking funky
         let scale = Math.min(canvasWidth / imgWidth, canvasHeight / imgHeight);
 
         const konvaImg = new Konva.Image({
