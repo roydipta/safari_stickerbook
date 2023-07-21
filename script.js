@@ -26,7 +26,43 @@ stickerStage.add(stickerLayer);
 imageUpload.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
-        displayImage(file);
+        //new code
+        img = new Image();
+        let formData= new FormData();
+        formData.append('image', file);
+        // fetch('http://127.0.0.1:5000/process_image', {
+        //     method: 'POST',
+        //     body: formData
+        // })
+        // .then(response=> response.blob())
+        // .then(blob => {
+        //     const url = URL.createObjectURL(blob);
+        //     img.src = url;
+        //     displayImage(img);
+        // })
+        fetch('http://127.0.0.1:5000/process_image', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                img.src = url;
+                displayImage(img);
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error.message);
+            });
+
+
+
+        // old code
+        // displayImage(file);
     }
 });
 
@@ -39,7 +75,20 @@ backgroundUpload.addEventListener('change', (e) => {
 
 function displayImage(file) {
     img = new Image();
-    img.src = URL.createObjectURL(file);
+    // img.src = URL.createObjectURL(file);
+
+    // Check if input is a File or Blob
+    if (file instanceof Blob || file instanceof File) {
+        img.src = URL.createObjectURL(file);
+    } 
+    // Check if input is an Image element
+    else if (file instanceof HTMLImageElement) {
+        img.src = file.src;
+    }
+    else {
+        console.error("Invalid input to displayImage:", file);
+        return;
+    }
 
     img.onload = () => {
         const imgWidth = img.width;
@@ -167,7 +216,7 @@ function copyToStickerCanvas(rect) {
         stickerLayer.add(stickerImage);
         stickerLayer.draw();
     };
-    imageObj.src = stageToDataURL;
+    imageObj.src = stageToDataURL; // was not working if I put before onload
 }
 
 downloadBtn.addEventListener('click', () => {
