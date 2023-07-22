@@ -1,0 +1,11 @@
+clip==1.0
+Flask==2.3.2
+Flask_Cors==4.0.0
+matplotlib==3.7.1
+numpy==1.25.0
+opencv_python==4.8.0.74
+Pillow==9.4.0
+Pillow==10.0.0
+segment_anything==1.0
+torch==2.1.0.dev20230630
+ultralytics==8.0.124
