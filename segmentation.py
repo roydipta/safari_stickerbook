@@ -57,14 +57,14 @@ def segment(image):
         return masks[0]
     
     else:
-        print('Not an Animal that I recognize')
+        return('Not an Animal that I recognize')
 
 def cutout(image, mask):
     original_image = image
     mask = mask
     binary_mask = mask #mask is already in 0's and 1's so no need to convert
 
-    original_image_rgba = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGBA) #to introduce a alpha channel
+    original_image_rgba = cv2.cvtColor(original_image, cv2.COLOR_RGB2RGBA) #to introduce a alpha channel but since javascript sends it as RGB instead of GBA you need to use RGB2RGBA
 
     # mask the alpha channel to make non-mask parts transparent
     original_image_rgba[:, :, 3] = binary_mask * 255

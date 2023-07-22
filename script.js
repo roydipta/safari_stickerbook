@@ -3,6 +3,8 @@ const backgroundUpload = document.getElementById('backgroundUpload');
 const downloadBtn = document.getElementById('downloadBtn');
 const imageContainer = document.getElementById('imageContainer');
 const stickerContainer = document.getElementById('stickerContainer');
+const loadingIcon = document.getElementById('loadingIcon');
+
 
 const canvasWidth = window.innerWidth * 0.6;
 const canvasHeight = window.innerHeight * 0.5;
@@ -26,20 +28,21 @@ stickerStage.add(stickerLayer);
 imageUpload.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
+        processFile(file);
+    }
+});
+
+
+function processFile(file){
+    if (file) {
+        loadingIcon.style.display = 'block';
         //new code
         img = new Image();
+
+
         let formData= new FormData();
         formData.append('image', file);
-        // fetch('http://127.0.0.1:5000/process_image', {
-        //     method: 'POST',
-        //     body: formData
-        // })
-        // .then(response=> response.blob())
-        // .then(blob => {
-        //     const url = URL.createObjectURL(blob);
-        //     img.src = url;
-        //     displayImage(img);
-        // })
+
         fetch('http://127.0.0.1:5000/process_image', {
                 method: 'POST',
                 body: formData
@@ -51,21 +54,27 @@ imageUpload.addEventListener('change', (e) => {
                 return response.blob();
             })
             .then(blob => {
+                loadingIcon.style.display = 'none';
                 const url = URL.createObjectURL(blob);
                 img.src = url;
-                displayImage(img);
+                // displayImage(img);
+                segmentToBackgroundImage(img);
             })
+            .then(
+                blob => {
+                    // loadingIcon.style.display = 'none';
+                    const url = URL.createObjectURL(file);
+                    img.src = url;
+                    // displayImage(img);
+                    displayImage(file);
+                })
             .catch(error => {
+                loadingIcon.style.display = 'none';
                 console.error('There was a problem with the fetch operation:', error.message);
             });
-
-
-
         // old code
-        // displayImage(file);
     }
-});
-
+}
 backgroundUpload.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -74,21 +83,22 @@ backgroundUpload.addEventListener('change', (e) => {
 });
 
 function displayImage(file) {
+    // return new Promise((resolve, reject) =>{
     img = new Image();
-    // img.src = URL.createObjectURL(file);
+    img.src = URL.createObjectURL(file);
 
     // Check if input is a File or Blob
-    if (file instanceof Blob || file instanceof File) {
-        img.src = URL.createObjectURL(file);
-    } 
-    // Check if input is an Image element
-    else if (file instanceof HTMLImageElement) {
-        img.src = file.src;
-    }
-    else {
-        console.error("Invalid input to displayImage:", file);
-        return;
-    }
+    // if (file instanceof Blob || file instanceof File) {
+    //     img.src = URL.createObjectURL(file);
+    // } 
+    // // Check if input is an Image element
+    // else if (file instanceof HTMLImageElement) {
+    //     img.src = file.src;
+    // }
+    // else {
+    //     console.error("Invalid input to displayImage:", file);
+    //     return;
+    // }
 
     img.onload = () => {
         const imgWidth = img.width;
@@ -166,7 +176,10 @@ function displayImage(file) {
             rectangle.visible(false);
         });
     };
+//     resolve('Success!');
+// });//return promise
 }
+
 
 function displayBackgroundImage(file) {
     const img = new Image();
@@ -198,7 +211,7 @@ function copyToStickerCanvas(rect) {
     const stageToDataURL = stage.toDataURL();
     let imageObj = new Image();
     imageObj.onload = function () {
-        let scale = 0.3; // set scale to 30%
+        let scale = 0.3; 
         let stickerImage = new Konva.Image({
             x: 0,
             y: 0,
@@ -209,8 +222,8 @@ function copyToStickerCanvas(rect) {
                 width: rect.width(),
                 height: rect.height(),
             },
-            width: rect.width() * scale, // set the width to be 30% of the original width
-            height: rect.height() * scale, // set the height to be 30% of the original height
+            width: rect.width() * scale, 
+            height: rect.height() * scale, 
             draggable: true,
         });
         stickerLayer.add(stickerImage);
@@ -218,6 +231,70 @@ function copyToStickerCanvas(rect) {
     };
     imageObj.src = stageToDataURL; // was not working if I put before onload
 }
+
+
+function segmentToBackgroundImage(file) {
+    const img = new Image();
+
+    if (file instanceof Blob || file instanceof File) {
+        img.src = URL.createObjectURL(file);
+    } 
+    else if (file instanceof HTMLImageElement) {
+        img.src = file.src;
+    }
+    else {
+        console.error("Invalid input to displayImage:", file);
+        return;
+    }
+
+    img.onload = () => {
+        const imgWidth = img.width;
+        const imgHeight = img.height;
+
+        let scale = 0.3;
+
+        const konvaImg = new Konva.Image({
+            x: 0,
+            y: 0,
+            image: img,
+            width: imgWidth * scale,
+            height: imgHeight * scale,
+            draggable: true,
+        });
+
+        stickerLayer.add(konvaImg);
+        //creating a transformer that will let us resize the image
+        const transformer = new Konva.Transformer({
+            node: konvaImg,
+            enabledAnchors: ['top-left', 'top-right', 'bottom-left', 'bottom-right'],
+            rotateAnchorOffset: 0,
+            rotationSnaps: [0, 90, 180, 270],
+            visible: false 
+        });
+
+        stickerLayer.add(transformer);
+
+        // Show the transformer when the image is clicked
+        konvaImg.on('click', (e) => {
+            e.cancelBubble = true;//important cause it will allow us to not click immediately - so someone really need to actually want to click on it
+            transformer.visible(true);
+            transformer.nodes([konvaImg]);
+            stickerLayer.draw();
+        });
+
+        // Hide transformer if you click outside the image
+        stickerLayer.getStage().on('click', (e) => {
+            if (e.target === konvaImg) {
+                return; // Don't hide if the image itself was clicked
+            }
+            transformer.visible(false);
+            stickerLayer.draw();
+        });
+
+        stickerLayer.draw();
+    };
+}
+
 
 downloadBtn.addEventListener('click', () => {
     let link = document.createElement('a');

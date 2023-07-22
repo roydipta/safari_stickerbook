@@ -21,18 +21,26 @@ def process_image():
     # image_np = np.array(image)  
     # return image
     
+     # for image testing
+    # file = request.files['image']
+    # if not file or not allowed_file(file.filename):
+    #     return "Invalid file type", 400
+    # image = Image.open(file.stream)
+    # image_np = np.array(image)   
+    # img = Image.fromarray(image_np)
+
+    # byte_io = io.BytesIO()
+    # image.save(byte_io, 'PNG')
+    # byte_io.seek(0)
+    # return send_file(byte_io, mimetype='image/png')
+
+
+    # USE THIS!
     file = request.files['image']
     if not file or not allowed_file(file.filename):
         return "Invalid file type", 400
     image = Image.open(file.stream)
     image_np = np.array(image)   
-    
-    # byte_io = io.BytesIO()
-    # image.save(byte_io, 'PNG')
-    # byte_io.seek(0)
-    # print(byte_io)
-    # return send_file(byte_io, mimetype='image/png')
-
 
     mask = segmentation.segment(image_np)
     processed_image_np = segmentation.cutout(image_np, mask)
