@@ -14,11 +14,15 @@
     <input type="file" id="backgroundUpload" accept="image/*" style="display:none">
     <label for="backgroundUpload" class="button">Choose a background</label>
     <div class="parent-container">
-        <div class="canvas-container" id="imageContainer">
-            <div id="loadingIcon" style="display: none;">
+        <div class="canvas-container">
+            <!-- <div id="loadingIcon" style="display: none;">
                 <img src="loading.gif" alt="Loading...">
-            </div>
+            </div> -->
+            <div id="imageContainer"></div>
+            <div id = "errorContainer"></div>
         </div>
+        <!-- <div id = "errorContainer"></div> -->
+
         <div class="sticker-container">
             <div id="stickerContainer"></div>
             <button id="downloadBtn">Download Sticker Canvas as PNG</button>

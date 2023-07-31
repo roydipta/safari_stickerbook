@@ -19,6 +19,7 @@ h1 {
 .parent-container {
     display: flex;
     justify-content: space-between;
+
 }
 
 .canvas-container, .sticker-container {

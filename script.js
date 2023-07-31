@@ -3,11 +3,32 @@ const backgroundUpload = document.getElementById('backgroundUpload');
 const downloadBtn = document.getElementById('downloadBtn');
 const imageContainer = document.getElementById('imageContainer');
 const stickerContainer = document.getElementById('stickerContainer');
-const loadingIcon = document.getElementById('loadingIcon');
+const errorContainer = document.getElementById('errorContainer');
 
+
+const loadingImg = new Image();
+loadingImg.src = 'loading.gif'; 
 
 const canvasWidth = window.innerWidth * 0.6;
 const canvasHeight = window.innerHeight * 0.5;
+
+// Add event listener for window resize
+window.addEventListener('resize', adjustCanvasSize);
+
+function adjustCanvasSize() {
+    const canvasWidth = window.innerWidth * 0.6;
+    const canvasHeight = window.innerHeight * 0.5;
+    
+    // Adjust your konva stages and layers as needed:
+    stickerStage.width(canvasWidth);
+    stickerStage.height(canvasHeight);
+    // Do the same for the main stage if it exists
+    if (stage) {
+        stage.width(canvasWidth);
+        stage.height(canvasHeight);
+    }
+}
+
 
 let stage, layer, img, stickerStage, stickerLayer;
 let startX, startY, endX, endY;
@@ -24,19 +45,37 @@ stickerStage = new Konva.Stage({
 stickerLayer = new Konva.Layer();
 stickerStage.add(stickerLayer);
 
+
 //as soon as you upload display that image - will need to change to call Python file
 imageUpload.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
+        if (stage != null){
+            deleteImageStage();
+    }
         processFile(file);
     }
 });
 
+function deleteImageStage(){
+    stage = undefined;
+    layer = undefined;
+    drawing = false;
+    img = undefined;
+    imageContainer.innerHTML = "";
+}
+
 
 function processFile(file){
     if (file) {
-        loadingIcon.style.display = 'block';
-        //new code
+
+        while (errorContainer.firstChild) {
+            errorContainer.removeChild(errorContainer.firstChild);
+        }
+        
+
+        imageContainer.appendChild(loadingImg);
+
         img = new Image();
 
 
@@ -54,7 +93,8 @@ function processFile(file){
                 return response.blob();
             })
             .then(blob => {
-                loadingIcon.style.display = 'none';
+                // show the segment on the background image
+                imageContainer.removeChild(loadingImg);
                 const url = URL.createObjectURL(blob);
                 img.src = url;
                 // displayImage(img);
@@ -62,17 +102,22 @@ function processFile(file){
             })
             .then(
                 blob => {
-                    // loadingIcon.style.display = 'none';
+                    // now we want to show what we uploaded
                     const url = URL.createObjectURL(file);
                     img.src = url;
                     // displayImage(img);
                     displayImage(file);
                 })
             .catch(error => {
-                loadingIcon.style.display = 'none';
-                console.error('There was a problem with the fetch operation:', error.message);
+                imageContainer.removeChild(loadingImg);
+                displayImage(file);
+
+                let errorDiv = document.createElement('errorDiv');
+                errorDiv.innerHTML = "I can't quite recognize that animal yet, can you show me where it is? You can create a box around the animal";
+                errorDiv.style.color = "red"; // Choose any color you like
+                errorDiv.style.textAlign = "center"; // If you want the text centered
+                errorContainer.appendChild(errorDiv);
             });
-        // old code
     }
 }
 backgroundUpload.addEventListener('change', (e) => {
@@ -87,7 +132,7 @@ function displayImage(file) {
     img = new Image();
     img.src = URL.createObjectURL(file);
 
-    // Check if input is a File or Blob
+    // // Check if input is a File or Blob
     // if (file instanceof Blob || file instanceof File) {
     //     img.src = URL.createObjectURL(file);
     // } 
@@ -172,6 +217,7 @@ function displayImage(file) {
             drawing = false;
             if (rectangle.width() !== 0 && rectangle.height() !== 0) {
                 copyToStickerCanvas(rectangle);
+                // segmentToBackgroundImage(rectangle);
             }
             rectangle.visible(false);
         });
@@ -211,7 +257,7 @@ function copyToStickerCanvas(rect) {
     const stageToDataURL = stage.toDataURL();
     let imageObj = new Image();
     imageObj.onload = function () {
-        let scale = 0.3; 
+        let scale = 1; 
         let stickerImage = new Konva.Image({
             x: 0,
             y: 0,
@@ -226,12 +272,24 @@ function copyToStickerCanvas(rect) {
             height: rect.height() * scale, 
             draggable: true,
         });
-        stickerLayer.add(stickerImage);
-        stickerLayer.draw();
+
+
+        let dataURL = stickerImage.toDataURL('image/png');
+        let blob = dataURLtoBlob(dataURL);  // Convert dataURL to blob or else segmentToBackgroundImage not reading!
+        segmentToBackgroundImage(blob);
     };
     imageObj.src = stageToDataURL; // was not working if I put before onload
+
 }
 
+function dataURLtoBlob(dataurl) { //stack overflow
+    let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+    while(n--){
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], {type:mime});
+}
 
 function segmentToBackgroundImage(file) {
     const img = new Image();
@@ -251,7 +309,7 @@ function segmentToBackgroundImage(file) {
         const imgWidth = img.width;
         const imgHeight = img.height;
 
-        let scale = 0.3;
+        let scale = 0.5; //maybe change? because it looks like losing clarity when bounding box
 
         const konvaImg = new Konva.Image({
             x: 0,
