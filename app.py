@@ -10,6 +10,7 @@ import cv2
 from flask_cors import CORS
 import base64
 import os
+import requests
 
 app = Flask(__name__)
 # CORS(app)
@@ -37,7 +38,13 @@ MODEL_FILE_NAME = 'sam_vit_b_01ec64.pth'
 file_path = 'sam_vit_b_01ec64.pth'
 
 def load_model():
-    # if not os.path.exists(file_path):
+    if not os.path.exists(file_path):
+        url = "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth"
+        response = requests.get(url, stream=True)
+        local_path = "sam_vit_b_01ec64.pth"
+        with open(local_path, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192): 
+                f.write(chunk)
     #     s3.download_file(BUCKET_NAME, 'sam_vit_b_01ec64.pth', file_path)
         # obj = s3.get_object(Bucket=BUCKET_NAME, Key=MODEL_FILE_NAME)
         # sam_pth = obj['Body'].read()
