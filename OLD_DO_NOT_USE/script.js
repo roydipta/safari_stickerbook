@@ -7,7 +7,7 @@ const errorContainer = document.getElementById('errorContainer');
 
 
 const loadingImg = new Image();
-loadingImg.src = 'loading.gif'; 
+loadingImg.src = '/templates/loading.gif'; 
 
 const canvasWidth = window.innerWidth * 0.6;
 const canvasHeight = window.innerHeight * 0.5;
@@ -57,6 +57,7 @@ imageUpload.addEventListener('change', (e) => {
     }
 });
 
+//this is so we can clear the stage so that the loading gif could show
 function deleteImageStage(){
     stage = undefined;
     layer = undefined;
@@ -69,22 +70,30 @@ function deleteImageStage(){
 function processFile(file){
     if (file) {
 
-        while (errorContainer.firstChild) {
+        while (errorContainer.firstChild) {//this is for the errorDiv so we can clear the error div 
             errorContainer.removeChild(errorContainer.firstChild);
         }
-        
+        console.log(typeof file);
 
         imageContainer.appendChild(loadingImg);
 
         img = new Image();
-
-
         let formData= new FormData();
-        formData.append('image', file);
+        let fetch_string;
+        // formData.append('image', file);
 
-        fetch('http://127.0.0.1:5000/process_image', {
+        if (typeof file === 'string' || file instanceof String){
+            formData.append('dataURL', file);
+            fetch_string = 'http://127.0.0.1:5000/segment_box';
+        }
+        else{
+            formData.append('image', file);
+            fetch_string = 'http://127.0.0.1:5000/process_image';
+        }
+        console.log(fetch_string);
+        fetch(fetch_string, {
                 method: 'POST',
-                body: formData
+                body: formData,
             })
             .then(response => {
                 if (!response.ok) {
@@ -235,8 +244,9 @@ function displayBackgroundImage(file) {
         const imgWidth = img.width;
         const imgHeight = img.height;
 
-        // maintain aspect ratio - or was looking funky
+        // maintain aspect ratio - or was looking weird
         let scale = Math.min(canvasWidth / imgWidth, canvasHeight / imgHeight);
+        // let scale = 1;
 
         const konvaImg = new Konva.Image({
             x: 0,
@@ -272,11 +282,15 @@ function copyToStickerCanvas(rect) {
             height: rect.height() * scale, 
             draggable: true,
         });
+        // stickerLayer.add(stickerImage);
+        // stickerLayer.draw();
 
 
         let dataURL = stickerImage.toDataURL('image/png');
         let blob = dataURLtoBlob(dataURL);  // Convert dataURL to blob or else segmentToBackgroundImage not reading!
-        segmentToBackgroundImage(blob);
+        // segmentToBackgroundImage(blob);
+        processFile(dataURL);
+
     };
     imageObj.src = stageToDataURL; // was not working if I put before onload
 
@@ -357,7 +371,7 @@ function segmentToBackgroundImage(file) {
 downloadBtn.addEventListener('click', () => {
     let link = document.createElement('a');
     link.download = 'stickerCanvas.png';
-    link.href = stickerStage.toDataURL();
+    link.href = stickerStage.toDataURL({ pixelRatio: 5 });
     link.click();
 });
 

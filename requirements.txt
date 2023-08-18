@@ -9,3 +9,12 @@ Pillow==10.0.0
 segment_anything==1.0
 torch==2.1.0.dev20230630
 ultralytics==8.0.124
+git+https://github.com/facebookresearch/segment-anything.git
+pycocotools
+onnxruntime
+onnx
+boto3
+os
+io
+base64
+PIL
