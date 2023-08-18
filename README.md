@@ -1,6 +1,8 @@
 # Safari Stickerbook
 This app combines the classifcation power of YOLOV8 and the segmentation capabilities of Meta's Segment Anything Model (SAM) to create a easy to use animal segmentation app. 
 
+Webpage live on: https://my-flask-app-ftuis4n5rq-ue.a.run.app
+
 ## Steps for Installation:<br><br>
 &emsp;Prereq: Python 3.9.16 is required.
 
